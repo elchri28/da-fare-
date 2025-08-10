@@ -97,6 +97,52 @@ gameLoop = function() {
   requestAnimationFrame(gameLoop);
 };
 
+/* Controlli touch per dispositivi mobili */
+let touchStartX = null;
+let touchStartY = null;
+
+canvas.addEventListener('touchstart', function(e) {
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+}, false);
+
+canvas.addEventListener('touchmove', function(e) {
+    if (touchStartX === null || touchStartY === null) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+
+    // Soglia per evitare piccoli movimenti involontari
+    const threshold = 15;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+        // Movimento orizzontale
+        if (dx > threshold && car.x < roadX + roadWidth - carWidth) {
+            car.x += car.speed;
+            touchStartX = touch.clientX;
+        } else if (dx < -threshold && car.x > roadX) {
+            car.x -= car.speed;
+            touchStartX = touch.clientX;
+        }
+    } else {
+        // Movimento verticale
+        if (dy > threshold && car.y < canvas.height - carHeight) {
+            car.y += car.speed;
+            touchStartY = touch.clientY;
+        } else if (dy < -threshold && car.y > 0) {
+            car.y -= car.speed;
+            touchStartY = touch.clientY;
+        }
+    }
+    e.preventDefault();
+}, false);
+
+canvas.addEventListener('touchend', function(e) {
+    touchStartX = null;
+    touchStartY = null;
+}, false);
+
 // Timer ostacoli aggiornato
 let obstacleTimer = setInterval(() => {
   if (!gameOver) spawnObstacle();
